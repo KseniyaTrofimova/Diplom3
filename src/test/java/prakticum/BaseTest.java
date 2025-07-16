@@ -15,13 +15,15 @@ import prakticum.pages.RestorePasswordPage;
 import prakticum.utils.Browser;
 import prakticum.utils.RandomDataGenerator;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Properties;
 
-@RunWith(Parameterized.class)
-public abstract class BaseTest {
+public class BaseTest {
     protected WebDriver driver;
-    protected String browserName;
+    protected String browserName; // Значение теперь берётся из переменных
 
     protected MainPage mainPage;
     protected LoginPage loginPage;
@@ -32,32 +34,29 @@ public abstract class BaseTest {
     protected User user;
     protected String accessToken;
 
-    @Parameterized.Parameters(name = "Browser: {0}")
-    public static Collection<Object[]> browsers() {
-        return Arrays.asList(new Object[][]{
-                {"chrome"},
-                {"yandex"}
-        });
-    }
-
-    public BaseTest(String browserName) {
-        this.browserName = browserName;
-    }
-
     @Before
     public void setUp() {
+        // 1. Получаем браузер из системной переменной или properties
+        browserName = System.getProperty("browser"); // Через -Dbrowser=chrome
+        // ИЛИ из файла config.properties:
+        // browserName = loadBrowserFromProperties();
+
+        if (browserName == null || browserName.isEmpty()) {
+            browserName = "chrome"; // Значение по умолчанию
+        }
+
         System.out.println("Starting test in browser: " + browserName);
 
         driver = Browser.getBrowser(browserName);
         driver.manage().window().maximize();
 
+        // Остальная инициализация остаётся без изменений
         mainPage = new MainPage(driver);
         loginPage = new LoginPage(driver);
         registrationPage = new RegistrationPage(driver);
         restorePasswordPage = new RestorePasswordPage(driver);
 
         userClient = new UserClient();
-
         user = new User();
         user.setEmail(RandomDataGenerator.generateRandomEmail());
         user.setPassword(RandomDataGenerator.generateRandomPassword(8));
@@ -69,17 +68,25 @@ public abstract class BaseTest {
         driver.get("https://stellarburgers.nomoreparties.site");
     }
 
+    // Метод для чтения из properties-файла (опционально)
+    private String loadBrowserFromProperties() {
+        Properties props = new Properties();
+        try (FileInputStream fis = new FileInputStream("src/test/resources/config.properties")) {
+            props.load(fis);
+            return props.getProperty("browser");
+        } catch (IOException e) {
+            throw new RuntimeException("Error loading properties file", e);
+        }
+    }
+
     @After
     public void tearDown() {
         if (accessToken != null) {
             userClient.deleteUser(accessToken);
         }
-
-        // Close browser
         if (driver != null) {
             driver.quit();
         }
-
         System.out.println("Test finished in browser: " + browserName);
     }
 }

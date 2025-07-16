@@ -7,10 +7,6 @@ import static org.junit.Assert.assertEquals;
 
 public class ConstructorTest extends BaseTest {
 
-    public ConstructorTest (String browserName) {
-        super(browserName);
-    }
-
     @Test
     @DisplayName("Переход к разделу 'Булки'")
     public void testBunsSection() {

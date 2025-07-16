@@ -9,10 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 public class LoginTest extends BaseTest {
 
-    public LoginTest(String browserName) {
-        super(browserName);
-    }
-
     @Before
     public void createTestUser() {
         userClient.createUser(user);
