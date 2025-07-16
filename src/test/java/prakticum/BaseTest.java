@@ -3,8 +3,6 @@ package prakticum;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
 import prakticum.api.models.User;
 import prakticum.api.models.UserClient;
@@ -17,13 +15,11 @@ import prakticum.utils.RandomDataGenerator;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Properties;
 
-public class BaseTest {
+public abstract class BaseTest {
     protected WebDriver driver;
-    protected String browserName; // Значение теперь берётся из переменных
+    protected String browserName;
 
     protected MainPage mainPage;
     protected LoginPage loginPage;
@@ -36,13 +32,10 @@ public class BaseTest {
 
     @Before
     public void setUp() {
-        // 1. Получаем браузер из системной переменной или properties
-        browserName = System.getProperty("browser"); // Через -Dbrowser=chrome
-        // ИЛИ из файла config.properties:
-        // browserName = loadBrowserFromProperties();
+        browserName = System.getProperty("browser");
 
         if (browserName == null || browserName.isEmpty()) {
-            browserName = "chrome"; // Значение по умолчанию
+            browserName = "chrome";
         }
 
         System.out.println("Starting test in browser: " + browserName);
@@ -50,7 +43,6 @@ public class BaseTest {
         driver = Browser.getBrowser(browserName);
         driver.manage().window().maximize();
 
-        // Остальная инициализация остаётся без изменений
         mainPage = new MainPage(driver);
         loginPage = new LoginPage(driver);
         registrationPage = new RegistrationPage(driver);
@@ -68,7 +60,6 @@ public class BaseTest {
         driver.get("https://stellarburgers.nomoreparties.site");
     }
 
-    // Метод для чтения из properties-файла (опционально)
     private String loadBrowserFromProperties() {
         Properties props = new Properties();
         try (FileInputStream fis = new FileInputStream("src/test/resources/config.properties")) {
